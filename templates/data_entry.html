@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Motor Report - Data Entry</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 30px;
+        text-align: center;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+
+      input[type="text"],
+      textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+
+      input[type="text"]:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #007bff;
+      }
+
+      textarea {
+        height: 100px;
+        resize: vertical;
+      }
+
+      .checkbox-group {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+      }
+
+      .checkbox-group h3 {
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .checkbox-item {
+        margin-bottom: 10px;
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        margin-right: 10px;
+        transform: scale(1.2);
+      }
+
+      .checkbox-item label {
+        display: inline;
+        font-weight: normal;
+        cursor: pointer;
+      }
+
+      .btn {
+        background: #007bff;
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 5px;
+        font-size: 18px;
+        cursor: pointer;
+        width: 100%;
+        transition: background-color 0.3s;
+      }
+
+      .btn:hover {
+        background: #0056b3;
+      }
+
+      .nav-links {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .nav-links a {
+        color: #007bff;
+        text-decoration: none;
+        margin: 0 15px;
+      }
+
+      .nav-links a:hover {
+        text-decoration: underline;
+      }
+
+      .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+      }
+
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      /* Mobile responsiveness */
+      @media (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+
+        .container {
+          padding: 20px;
+        }
+
+        input[type="text"],
+        textarea {
+          font-size: 16px; /* Prevents zoom on iOS */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📋 Motor Report</h1>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <form method="POST">
+        <div class="form-group">
+          <label for="project_name">Project Name:</label>
+          <input type="text" id="project_name" name="project_name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="worker_name">Worker Name:</label>
+          <input type="text" id="worker_name" name="worker_name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Take Note:</label>
+          <textarea
+            id="notes"
+            name="notes"
+            placeholder="Enter your notes here..."
+          ></textarea>
+        </div>
+
+        <div class="checkbox-group">
+          <h3>Task Checklist:</h3>
+
+          <div class="checkbox-item">
+            <input type="checkbox" id="units" name="units" />
+            <label for="units">✓ Units</label>
+          </div>
+
+          <div class="checkbox-item">
+            <input type="checkbox" id="tick_boxes" name="tick_boxes" />
+            <label for="tick_boxes">✓ Tick Boxes</label>
+          </div>
+
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="photos_uploaded"
+              name="photos_uploaded"
+            />
+            <label for="photos_uploaded">✓ Upload Photos</label>
+          </div>
+
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="required_to_fill"
+              name="required_to_fill"
+            />
+            <label for="required_to_fill"
+              >✓ Not Required to Fill All Blanks</label
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="btn">Save Report</button>
+      </form>
+
+      <div class="nav-links">
+        <a href="/reports">📊 View All Reports</a>
+      </div>
+    </div>
+  </body>
+</html>

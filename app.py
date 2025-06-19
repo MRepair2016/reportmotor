@@ -1,0 +1,117 @@
+# Created 19/06/2025
+from flask import Flask, render_template, request, redirect, url_for, flash
+import os
+from datetime import datetime
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import urllib.parse
+
+# Flask: The main class to create the web application.
+# render_template: Lets you use HTML files (like index.html) as templates for your web pages.
+# request: Helps you get data from forms (e.g. data submitted by the user)
+# url_for: Helps to build URLs for the web pages (so you don’t hardcode paths).
+# flash: Used to show messages to users (like errors or success notices).
+# psycopg2: Hadling PostgreSQL database
+# os: Operating system, handling file paths etc
+# datetime: handle dates and time (timestamp)
+
+app = Flask(__name__) # Creates Flask application
+app.secret_key = os.environ.get ("SECRET KEY", "your-secret-key-change-this") # Security, can change into random strings
+
+# Configuration
+database_url = os.environ.get("database_url")
+basedir = os.path.abspath(os.path.dirname(__file__))  # The folder where your app.py is
+upload_folder = os.path.join(basedir, 'static/uploads')
+app.config["upload_folder"] = upload_folder
+
+def get_db_connection():
+    """Get database connection"""
+    conn = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+    return conn
+
+def initialize_database(): 
+    # Execute commands (INSERT, CREATE TABLE, etc)
+    conn = get_db_connection()
+    cursor = conn.cursor() 
+    
+    # Create reports table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS reports (
+            id SERIAL PRIMARY KEY,
+            project_name VARCHAR(255) NOT NULL,
+            worker_name VARCHAR(255) NOT NULL,
+            date_created TIMESTAMP NOT NULL,
+            notes TEXT,
+            units_checked BOOLEAN DEFAULT FALSE,
+            tick_boxes_checked BOOLEAN DEFAULT FALSE,
+            photos_uploaded BOOLEAN DEFAULT FALSE,
+            required_to_fill BOOLEAN DEFAULT FALSE
+        )
+    ''')
+    
+    # Create photos table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS photos (
+            id SERIAL PRIMARY KEY,
+            report_id INTEGER REFERENCES reports(id),
+            filename VARCHAR(255) NOT NULL,
+            upload_date TIMESTAMP NOT NULL
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+    print("Database initialized successfully!")
+    
+@app.route('/') # / is the home page
+def home():
+    """Home page - redirect to data entry for now"""
+    return redirect(url_for('data_entry'))
+    
+@app.route('/data_entry', methods=["GET","POST"])
+def data_entry():
+        """Data entry form for workers"""
+        if request.method == 'POST':
+            # Get form data
+            project_name = request.form['project_name']
+            worker_name = request.form['worker_name']
+            notes = request.form['notes']
+            
+            # Get checkbox values
+            units_checked = 'units' in request.form
+            tick_boxes = 'tick_boxes' in request.form
+            photos_uploaded = 'photos_uploaded' in request.form
+            required_to_fill = 'required_to_fill' in request.form
+            
+            # Save to database
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT INTO reports (project_name, worker_name, date_created, notes,
+                                units_checked, tick_boxes_checked, photos_uploaded, required_to_fill)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ''', (project_name, worker_name, datetime.now(),
+                notes, units_checked, tick_boxes, photos_uploaded, required_to_fill))
+            
+            conn.commit()
+            conn.close()
+        
+            flash('Report submitted successfully!', 'success')
+            return redirect(url_for('data_entry'))
+        
+        return render_template('data_entry.html')
+    
+if __name__ == '__main__':
+    
+        # Create uploads folder if it doesn't exist
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+            
+        # Initialize database on first run
+        if database_url:
+            initialize_database()
+        
+        # Run the app
+        port = int(os.environ.get('PORT', 5000))
+        app.run(debug=False, host='0.0.0.0', port=port)
